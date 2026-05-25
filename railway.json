@@ -1,0 +1,44 @@
+{
+  "services": {
+    "auth": {
+      "build": {
+        "builder": "nixpacks",
+        "buildCommand": "cd auth_service && npm install"
+      },
+      "deploy": {
+        "startCommand": "cd auth_service && npm start",
+        "healthcheckPath": "/health"
+      }
+    },
+    "attendance": {
+      "build": {
+        "builder": "nixpacks",
+        "buildCommand": "cd attendance_service && npm install"
+      },
+      "deploy": {
+        "startCommand": "cd attendance_service && npm start",
+        "healthcheckPath": "/health"
+      }
+    },
+    "report": {
+      "build": {
+        "builder": "nixpacks",
+        "buildCommand": "cd report_service && npm install"
+      },
+      "deploy": {
+        "startCommand": "cd report_service && npm start",
+        "healthcheckPath": "/health"
+      }
+    },
+    "whatsapp": {
+      "build": {
+        "builder": "nixpacks",
+        "buildCommand": "cd whatsapp_service && npm install"
+      },
+      "deploy": {
+        "startCommand": "cd whatsapp_service && npm start",
+        "healthcheckPath": "/health"
+      }
+    }
+  }
+}
