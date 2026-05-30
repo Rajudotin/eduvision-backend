@@ -227,8 +227,13 @@ async def delete_student(student_id: str):
         raise HTTPException(status_code=404, detail='Student not found')
 
 
+# if __name__ == "__main__":
+#     # Load existing database
+#     recognizer.load_database()
+#     print(f"✅ API Service Started with {len(recognizer.database)} registered students")
+#     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
 if __name__ == "__main__":
-    # Load existing database
-    recognizer.load_database()
-    print(f"✅ API Service Started with {len(recognizer.database)} registered students")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port)

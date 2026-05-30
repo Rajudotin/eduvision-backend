@@ -32,4 +32,4 @@ RUN mkdir -p data
 # Use Railway's dynamic PORT
 EXPOSE 8000
 
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["python", "-c", "import os, uvicorn; port = int(os.environ.get('PORT', 8000)); uvicorn.run('app.main:app', host='0.0.0.0', port=port)"]
