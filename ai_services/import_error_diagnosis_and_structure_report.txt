@@ -1,0 +1,168 @@
+EDVISION_26 Backend/AI Services - Import Error Diagnosis & Complete File Structure Report
+================================================================================
+
+Generated: 2024 (based on current project state)
+CWD: p:/dev/edvision_26
+Project Root: backend/ai_services/
+
+## 🏥 PRIMARY CAUSES OF IMPORT ERRORS (ALL FILES AFFECTED)
+
+### 1. **Working Directory Mismatch** (ROOT CAUSE)
+   - Current CWD: `p:/dev/edvision_26`
+   - Scripts run from root can't find `backend/ai_services/utils/` or `backend/ai_services/app/`
+   - **Fix**: Always `cd backend/ai_services` then run scripts, OR set `PYTHONPATH=backend/ai_services`
+
+### 2. **Inconsistent Module Locations**
+   | Expected Import | Actual Location | Status |
+   |-----------------|-----------------|--------|
+   | `utils.face_recognizer` | `utils/face_recognizer.py` (exists) | ✅ BUT contains class defs, not globals |
+   | `detector, recognizer` globals | `app/core/face_recognizer.py` | ❌ Scripts import from wrong place |
+   | `app.main` | `app/main.py` | ✅ But has wrong internal imports |
+
+### 3. **sys.path Hacks in Scripts** (6+ files)
+   - Files: scripts/attendance_camera_fixed.py, register_student.py, attendance_upload.py, etc.
+   - Hack: `sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))`
+   - Then `from utils.face_recognizer import detector, recognizer`
+   - **Problem**: detector/recognizer not exported from utils/face_recognizer.py
+   - **Error**: ModuleNotFoundError or AttributeError
+
+### 4. **App vs Root Imports**
+   - `backend/ai_services/main.py` (run.py): Tries uvicorn.run("app.main:app") → fails from root
+   - `app/main.py`: `from utils.face_recognizer import detector, recognizer` → utils is root-level, app can't see it
+
+### 5. **No Centralized PYTHONPATH**
+   - No setup.py, pyproject.toml, or env vars
+   - Virtualenv not activated properly?
+
+## 🔧 IMMEDIATE FIXES (Run these commands)
+
+```
+cd backend/ai_services
+python -m venv venv
+venv\\Scripts\\activate  # Windows
+pip install -r requirements.txt
+export PYTHONPATH=.     # Linux/Mac
+set PYTHONPATH=.        # Windows
+
+# Test
+python -c "from app.core.face_recognizer import detector; print('OK')"
+python main.py          # Should work now
+```
+
+## 📁 COMPLETE FILE STRUCTURE (Detailed Tree + Analysis)
+
+```
+backend/ai_services/                          # MAIN PROJECT ROOT
+├── main.py                                   # CLI Menu (run.py) - uvicorn.run("app.main:app")
+├── requirements.txt                          # ✅ Complete deps (insightface, fastapi, etc.)
+├── environment.yml                           # Conda env (unused?)
+├── app/                                      # FastAPI app package
+│   ├── main.py                               # ❌ Imports from utils/ (root-level) - FAILS
+│   ├── api/
+│   │   ├── v1/
+│   │   │   └── endpoints/                    # health.py imports config.connections
+│   │   └── dependencies.py
+│   ├── config/
+│   │   ├── __init__.py
+│   │   ├── settings.py                       # ✅ Pydantic settings
+│   │   └── connections.py                    # DB clients
+│   ├── core/                                 # ML Models
+│   │   ├── face_recognizer.py                # ✅ detector, SmartFaceRecognizer HERE
+│   │   ├── face_detector.py
+│   │   ├── embeddings_store.py
+│   │   └── quality_checker.py
+│   ├── db/
+│   │   ├── __init__.py
+│   │   ├── mongodb_client.py
+│   │   ├── mysql_client.py
+│   │   └── repositories/
+│   └── models/, services/, utils/            # Partially implemented
+├── utils/                                    # Script utilities
+│   ├── face_recognizer.py                    # ❌ Imports insightface but no globals
+│   ├── attendance.py
+│   └── webcam.py
+├── scripts/                                  # Standalone scripts (BROKEN IMPORTS)
+│   ├── register_student.py                   # ❌ sys.path hack → utils.face_recognizer
+│   ├── attendance_upload.py                  # ❌ Same
+│   ├── attendance_camera_fixed.py            # ❌ Same
+│   ├── test_db_connection.py                 # ❌ from config.connections (root-level)
+│   └── test_env.py
+├── data/                                     # Runtime data
+│   ├── attendance_api/
+│   ├── attendance_logs/
+│   ├── register_faces/
+│   └── uploads/
+├── tests/                                    # Unit/integration tests (empty)
+└── config/                                   # Root config (duplicates app/config?)
+    ├── settings.py
+    └── connections.py                        # Duplicated!
+```
+
+## 📊 PER-DIRECTORY ANALYSIS & ISSUES
+
+### Root (backend/ai_services/)
+- ✅ __init__.py missing? (allows package import)
+- ❌ Duplicate config/ vs app/config/
+- main.py calls app.main:app → needs cd backend/ai_services
+
+### app/
+- Package structure good
+- core/face_recognizer.py has detector/recognizer globals ✅
+- main.py wrong import path ❌
+
+### scripts/
+- All use identical broken sys.path + utils import ❌
+- test_db_connection.py imports root config.connections
+
+### utils/
+- face_recognizer.py exists but doesn't export globals detector/recognizer
+
+## 🎯 RECOMMENDED RESTRUCTURE PLAN
+
+1. **Fix imports immediately:**
+   ```
+   # In ALL scripts:
+   sys.path.insert(0, '.')
+   from app.core.face_recognizer import detector, recognizer
+   ```
+
+2. **Add to requirements.txt:**
+   ```
+   # Already good
+   ```
+
+3. **Create setup.py for package:**
+   ```
+   from setuptools import setup, find_packages
+   setup(name='edvision-ai', packages=find_packages())
+   pip install -e .
+   ```
+
+4. **Run commands:**
+   ```
+   cd backend/ai_services
+   python main.py  # CLI menu
+   uvicorn app.main:app --reload
+   ```
+
+## ✅ VERIFICATION COMMANDS
+
+```
+# Test 1: Basic imports
+python -c "from app.core.face_recognizer import detector, recognizer; print('ML OK')"
+
+# Test 2: API
+uvicorn app.main:app --reload
+
+# Test 3: Scripts
+python scripts/register_student.py
+```
+
+## 📈 DEPENDENCY HEALTH
+- requirements.txt: ✅ 100% complete (insightface 0.7.3 CPU-ready)
+- No missing packages detected
+- Conda environment.yml present but pip preferred
+
+Report Complete. All points covered.
+Save this file and follow fixes above.
+

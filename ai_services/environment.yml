@@ -1,0 +1,26 @@
+# environment-fixed.yml - Hybrid Conda + Pip Setup
+name: eduvision-ai
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  # Core Python
+  - python=3.10.13
+  - pip  # Include pip in conda environment
+  
+  # System Libraries (via conda - pre-compiled)
+  - opencv=4.9.0
+  - numpy=1.24.3
+  - scikit-learn=1.3.2
+  - onnxruntime=1.16.3
+  
+  # Python Packages (via pip - no compilation needed)
+  - pip:
+    - insightface==0.7.3
+    - fastapi==0.109.0
+    - uvicorn[standard]==0.27.0
+    - pydantic==2.5.3
+    - pymongo==4.6.1
+    - redis==5.0.1
+    - python-dotenv==1.0.0
+    - python-multipart==0.0.6
