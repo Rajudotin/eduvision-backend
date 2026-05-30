@@ -41,12 +41,9 @@
       }
     },
     "face": {
-      "build": {
-        "builder": "nixpacks",
-        "buildCommand": "cd ai_services && pip install -r requirements.txt"
-      },
+      "build": { "builder": "docker" },
       "deploy": {
-        "startCommand": "ai_services && uvicorn app.main:app --host 0.0.0.0 --port $PORT",
+        "startCommand": "uvicorn app.main:app --host 0.0.0.0 --port $PORT",
         "healthcheckPath": "/api/v1/health"
       }
     }
