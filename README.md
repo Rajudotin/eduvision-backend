@@ -225,7 +225,7 @@ cd eduvision-backend
 This project includes a one-click script:
 
 ```powershell
-. 1start_all.ps1 1
+./start_all.ps1
 ```
 
 What it starts (from `start_all.ps1`):
@@ -405,4 +405,4 @@ MIT License
 
 ---
 
-<p align="center">Made with  by Raju | Acharya Nagarjuna University</p>
+<p align="center">Made with ❤️ by Raju | Acharya Nagarjuna University</p>
