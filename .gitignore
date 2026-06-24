@@ -1,6 +1,5 @@
 @"
 # AI Face Service - NOT deployed
-ai_services/
 
 # Dependencies
 node_modules/
